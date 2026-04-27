@@ -32,7 +32,13 @@ from app.schemas.progress import (
 from app.schemas.skill_gap import SkillGapRecalcResponse, SkillGapResponse, WeakSubjectDetail
 from app.schemas.student import StudentProfileResponse, StudentProfileUpdate, StudentProfileUpdateResponse
 from app.schemas.subject_skill_mapping import MappingCreate, MappingResponse
-from app.schemas.user import DeactivateResponse, UserListResponse, UserSummary
+from app.schemas.user import (
+	DeactivateResponse,
+	FacultyStudentAssignmentRequest,
+	FacultyStudentAssignmentResponse,
+	UserListResponse,
+	UserSummary,
+)
 
 __all__ = [
 	"AcademicRecordCreate",
@@ -47,6 +53,8 @@ __all__ = [
 	"CareerTrackModulesResponse",
 	"CareerTrackSummary",
 	"DeactivateResponse",
+	"FacultyStudentAssignmentRequest",
+	"FacultyStudentAssignmentResponse",
 	"FacultyStudentListResponse",
 	"FacultyStudentSummary",
 	"LearningPathGenerateResponse",

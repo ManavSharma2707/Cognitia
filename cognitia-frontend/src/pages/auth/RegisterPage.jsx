@@ -85,6 +85,7 @@ export default function RegisterPage() {
   const [values,  setValues]  = useState(INITIAL)
   const [errors,  setErrors]  = useState({})
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   function handleChange(e) {
     const { name, value } = e.target
@@ -182,7 +183,7 @@ export default function RegisterPage() {
             />
             <Input
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               name="password"
               value={values.password}
               onChange={handleChange}
@@ -190,6 +191,17 @@ export default function RegisterPage() {
               placeholder="Min. 8 characters"
               required
             />
+
+            <label className="flex items-center gap-2 text-sm text-cognitia-muted -mt-2">
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(event) => setShowPassword(event.target.checked)}
+                className="rounded border-cognitia-border text-cognitia-teal focus:ring-cognitia-teal"
+              />
+              View password
+            </label>
+
             <Select
               label="Role"
               name="role"

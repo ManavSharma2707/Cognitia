@@ -36,6 +36,7 @@ export const API = {
   ADMIN: {
     USERS:           '/api/v1/users/',
     DEACTIVATE_USER: (id) => `/api/v1/users/${id}/deactivate`,
+    ASSIGN_FACULTY_STUDENT: '/api/v1/users/assignments/faculty-student',
     MAPPINGS:        '/api/v1/admin/mappings/',
     TRACK_MODULES:   (id) => `/api/v1/admin/tracks/${id}/modules`,
   },

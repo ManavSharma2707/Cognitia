@@ -45,6 +45,13 @@ function categoryVariant(category = '') {
   return 'active'
 }
 
+function scoreColorFromLevel(level = '') {
+  const normal = String(level).toLowerCase()
+  if (normal.includes('strong')) return '#22C55E'
+  if (normal.includes('moderate') || normal.includes('intermediate')) return '#F59E0B'
+  return '#EF4444'
+}
+
 export default function StudentDashboard() {
   const [isGeneratingPath, setIsGeneratingPath] = useState(false)
 
@@ -52,7 +59,7 @@ export default function StudentDashboard() {
     const getOrNull = async (request) => {
       try {
         const response = await request
-        return response.data
+        return response
       } catch (err) {
         if (err?.response?.status === 404) return null
         throw err
@@ -85,6 +92,11 @@ export default function StudentDashboard() {
   const weakSubjects = Number(skillGap?.weak_subject_count ?? 0)
   const subjectsEntered = academicRecords.length
   const attendanceAtRisk = skillGap?.attendance_at_risk
+  const subjectPerformanceData = academicRecords.slice(0, 6).map((record) => ({
+    label: record.subject_name,
+    value: Number(record.score_percent ?? 0),
+    color: scoreColorFromLevel(record.performance_level),
+  }))
 
   async function handleGenerateLearningPath() {
     setIsGeneratingPath(true)
@@ -210,10 +222,10 @@ export default function StudentDashboard() {
           )}
         </Card>
 
-        <Card title="Skill Gap Summary" subtitle="Chart coming in Prompt 10" delay={0.15}>
+        <Card title="Skill Gap Summary" subtitle="Latest scores across entered subjects" delay={0.15}>
           {academicRecords.length ? (
             <div className="space-y-4">
-              <BarChart />
+              <BarChart data={subjectPerformanceData} yLabel="Score (%)" />
               <div className="space-y-2">
                 {academicRecords.slice(0, 6).map((record) => (
                   <div key={record.record_id} className="flex items-center justify-between gap-3">

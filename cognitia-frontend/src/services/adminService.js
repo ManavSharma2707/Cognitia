@@ -14,6 +14,14 @@ export async function deactivateUser(userId) {
   return response.data
 }
 
+export async function assignFacultyStudent(facultyUserId, studentUserId) {
+  const response = await apiClient.post(API.ADMIN.ASSIGN_FACULTY_STUDENT, {
+    faculty_user_id: facultyUserId,
+    student_user_id: studentUserId,
+  })
+  return response.data
+}
+
 export async function createMapping(payload) {
   const response = await apiClient.post(API.ADMIN.MAPPINGS, payload)
   return response.data

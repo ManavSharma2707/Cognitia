@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-import { deactivateUser, listUsers } from '../../services/adminService'
+import { assignFacultyStudent, deactivateUser, listUsers } from '../../services/adminService'
 import Card from '../../components/ui/Card'
 import Input from '../../components/ui/Input'
 import Select from '../../components/ui/Select'
@@ -23,8 +23,20 @@ function roleVariant(role) {
   return 'active'
 }
 
+function toUserOptions(users) {
+  return [
+    { value: '', label: 'Select' },
+    ...users.map((user) => ({
+      value: String(user.user_id),
+      label: `${user.full_name} (${user.email})`,
+    })),
+  ]
+}
+
 export default function AdminUsers() {
   const [users, setUsers] = useState([])
+  const [facultyUsers, setFacultyUsers] = useState([])
+  const [studentUsers, setStudentUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [page, setPage] = useState(1)
@@ -35,6 +47,8 @@ export default function AdminUsers() {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [targetUser, setTargetUser] = useState(null)
   const [deactivating, setDeactivating] = useState(false)
+  const [assigning, setAssigning] = useState(false)
+  const [assignForm, setAssignForm] = useState({ faculty_user_id: '', student_user_id: '' })
 
   useEffect(() => {
     async function loadUsers() {
@@ -58,6 +72,25 @@ export default function AdminUsers() {
   useEffect(() => {
     setPage(1)
   }, [roleFilter])
+
+  useEffect(() => {
+    async function loadAssignmentOptions() {
+      try {
+        const [facultyData, studentData] = await Promise.all([
+          listUsers(1, 100, 'faculty'),
+          listUsers(1, 100, 'student'),
+        ])
+
+        setFacultyUsers(facultyData?.users ?? [])
+        setStudentUsers(studentData?.users ?? [])
+      } catch {
+        setFacultyUsers([])
+        setStudentUsers([])
+      }
+    }
+
+    loadAssignmentOptions()
+  }, [])
 
   const filteredUsers = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -101,8 +134,41 @@ export default function AdminUsers() {
     }
   }
 
+  function updateAssignForm(event) {
+    const { name, value } = event.target
+    setAssignForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  async function handleAssignStudent(event) {
+    event.preventDefault()
+
+    const facultyUserId = Number(assignForm.faculty_user_id)
+    const studentUserId = Number(assignForm.student_user_id)
+    if (!facultyUserId || !studentUserId) {
+      toast.error('Please choose both faculty and student')
+      return
+    }
+
+    setAssigning(true)
+    try {
+      await assignFacultyStudent(facultyUserId, studentUserId)
+      toast.success('Student assigned to faculty')
+      setAssignForm({ faculty_user_id: '', student_user_id: '' })
+    } catch (err) {
+      if (err?.response?.status === 409) {
+        toast.error('Student is already assigned to this faculty')
+      } else {
+        toast.error(err?.response?.data?.detail ?? 'Unable to assign student right now')
+      }
+    } finally {
+      setAssigning(false)
+    }
+  }
+
   const hasPrevious = page > 1
   const hasNext = total > page * LIMIT
+  const facultyOptions = toUserOptions(facultyUsers)
+  const studentOptions = toUserOptions(studentUsers)
 
   return (
     <div className="p-6 space-y-6">
@@ -228,6 +294,34 @@ export default function AdminUsers() {
             </Button>
           </div>
         </div>
+      </Card>
+
+      <Card title="Assign Student To Faculty" subtitle="Create a faculty-student assignment for dashboard visibility.">
+        <form onSubmit={handleAssignStudent} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Select
+            label="Faculty"
+            name="faculty_user_id"
+            value={assignForm.faculty_user_id}
+            onChange={updateAssignForm}
+            options={facultyOptions}
+            required
+          />
+
+          <Select
+            label="Student"
+            name="student_user_id"
+            value={assignForm.student_user_id}
+            onChange={updateAssignForm}
+            options={studentOptions}
+            required
+          />
+
+          <div className="flex items-end">
+            <Button type="submit" className="w-auto px-6" loading={assigning}>
+              Assign Student
+            </Button>
+          </div>
+        </form>
       </Card>
 
       <Modal

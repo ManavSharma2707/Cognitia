@@ -23,3 +23,17 @@ class DeactivateResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     message: str
     user_id: int
+
+
+class FacultyStudentAssignmentRequest(BaseModel):
+    faculty_user_id: int
+    student_user_id: int
+
+
+class FacultyStudentAssignmentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    message: str
+    faculty_user_id: int
+    student_user_id: int
+    faculty_id: int
+    student_id: int
